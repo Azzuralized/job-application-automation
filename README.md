@@ -47,7 +47,7 @@ pip install -r requirements.txt
 
 # 2. Configure .env
 GEMINI_API_KEY=your_api_key_here
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=your_selected_gemini_model
 TESSERACT_CMD=C:\Program Files\Tesseract-OCR\tesseract.exe
 
 # 3. Setup Gmail OAuth
