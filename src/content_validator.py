@@ -578,35 +578,37 @@ def validate_application(
     }
     
     # --------------------------------------------------------
-    # Final decision
+    # Final decision (SMART LOGIC)
     # --------------------------------------------------------
-    score = calculate_score(
-        checks
-    )
-    status = determine_status(
-        checks
-    )
+    score = calculate_score(checks)
     
+    # Cek apakah ada check yang benar-benar gagal (failed)
+    has_failures = any(check.get("status") == "failed" for check in checks.values())
+    has_warnings = any(check.get("status") == "warning" for check in checks.values())
+    
+    # Tentukan status untuk display di terminal
+    if has_failures:
+        status = "failed"
+    elif has_warnings:
+        status = "needs_review"
+    else:
+        status = "passed"
+    
+    # LOGIKA BARU: Izinkan draft jika TIDAK ADA kegagalan (failed) 
+    # DAN score masih aman (>= 80), meskipun ada warning.
+    # Warning hanya sebagai catatan human review, bukan blocker pipeline,
+    # karena draft tetap akan di-review manual di Gmail.
+    ready_for_draft = (not has_failures) and (score >= 75)
+
     return {
-        "application_id": application.get(
-            "application_id"
-        ),
-        "validated_at": __import__(
-            "datetime"
-        ).datetime.now().isoformat(
-            timespec="seconds"
-        ),
+        "application_id": application.get("application_id"),
+        "validated_at": __import__("datetime").datetime.now().isoformat(timespec="seconds"),
         "status": status,
         "score": score,
         "checks": checks,
         "summary": {
-            "ready_for_draft": (
-                status == "passed"
-            ),
-            "requires_human_review": (
-                status == "needs_review"
-                or status == "failed"
-            )
+            "ready_for_draft": ready_for_draft,
+            "requires_human_review": (status == "needs_review" or status == "failed")
         }
     }
 

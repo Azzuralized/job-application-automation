@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Application Automation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0E1B26;
+            --panel: #16293A;
+            --paper: #F1F3EF;
+            --paper-dim: #E4E7E0;
+            --amber: #E2A63B;
+            --sage: #6E9A82;
+            --ink-soft: #4A5A68;
+            --fog: #93A3AE;
+            --rule: #263B4E;
+        }
+
+        * {
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            background: var(--paper);
+            font-family: 'Inter', sans-serif;
+            color: var(--ink);
+        }
+
+        .font-display {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--amber);
+            animation: pulse-dot 2.4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.35;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .status-dot {
+                animation: none;
+            }
+        }
+
+        .btn-primary {
+            background: var(--amber);
+            color: var(--ink);
+            transition: background 0.15s ease;
+        }
+
+        .btn-primary:hover {
+            background: #eeb655;
+        }
+
+        .btn-primary:disabled {
+            background: var(--fog);
+            color: var(--ink-soft);
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            border: 1px solid rgba(241, 243, 239, 0.35);
+            color: var(--paper);
+            transition: border-color 0.15s ease, background 0.15s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: rgba(241, 243, 239, 0.7);
+            background: rgba(241, 243, 239, 0.06);
+        }
+
+        .term-window {
+            background: #0B141C;
+            border: 1px solid var(--rule);
+        }
+
+        .term-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+        }
+
+        .hidden-section {
+            display: none;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Toast Notification */
+        .toast {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--ink);
+            border: 1px solid var(--sage);
+            color: var(--sage);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            z-index: 100;
+            animation: slideIn 0.3s ease-out;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- Status strip -->
+    <div class="bg-[var(--ink)] text-[var(--fog)] font-mono text-xs sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-6 py-2 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="status-dot"></span>
+                <span>PIPELINE &mdash; SCREENSHOT TO GMAIL DRAFT</span>
+            </div>
+            <a href="https://github.com/Azzuralized/job-application-automation" target="_blank"
+                class="hidden sm:flex items-center gap-2 hover:text-[var(--paper)] transition-colors">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                    <path
+                        d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z" />
+                </svg>
+                <span>source</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Hero -->
+    <div class="bg-[var(--ink)] text-[var(--paper)]">
+        <div class="max-w-5xl mx-auto px-6 pt-16 pb-16">
+            <p class="font-mono text-xs tracking-[0.2em] text-[var(--amber)] mb-6">JOB APPLICATION AUTOMATION v1.0.0</p>
+            <h1 class="font-display text-4xl sm:text-5xl md:text-6xl font-semibold leading-[1.05] max-w-3xl">
+                A screenshot goes in.<br>A finished draft comes out.
+            </h1>
+            <p class="text-lg text-[var(--fog)] max-w-xl mt-6 leading-relaxed">
+                Capture a job listing, and the pipeline reads it, matches it against your CVs, and writes a tailored
+                cover letter &mdash; landing as a Gmail draft you review before it ever gets sent.
+            </p>
+        </div>
+        <div class="border-t border-[var(--rule)]">
+            <div class="max-w-5xl mx-auto px-6 py-6 grid grid-cols-2 md:grid-cols-4 gap-6 font-mono">
+                <div>
+                    <p class="text-xs text-[var(--fog)] mb-1">CVS_AVAILABLE</p>
+                    <p class="text-2xl text-[var(--paper)]" id="cv-count">&mdash;</p>
+                </div>
+                <div>
+                    <p class="text-xs text-[var(--fog)] mb-1">SCREENSHOTS_QUEUED</p>
+                    <p class="text-2xl text-[var(--paper)]" id="screenshot-count">&mdash;</p>
+                </div>
+                <div>
+                    <p class="text-xs text-[var(--fog)] mb-1">PROFILES_BUILT</p>
+                    <p class="text-2xl text-[var(--sage)]" id="cv-profiles-status">&mdash;</p>
+                </div>
+                <div>
+                    <p class="text-xs text-[var(--fog)] mb-1">DRAFT_STATUS</p>
+                    <p class="text-2xl text-[var(--amber)]" id="application-status">&mdash;</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div class="flex-1 max-w-5xl mx-auto px-6 py-12 w-full space-y-12">
+
+        <!-- STEP 1: CV Management -->
+        <section id="step-cv" class="fade-in">
+            <div class="flex items-center gap-3 mb-6">
+                <span
+                    class="w-8 h-8 rounded-full bg-[var(--ink)] text-[var(--paper)] font-mono text-sm flex items-center justify-center">01</span>
+                <h2 class="font-display text-2xl font-semibold">Manage CV Library</h2>
+            </div>
+            <div class="term-window rounded-lg overflow-hidden">
+                <div class="flex items-center gap-2 px-4 py-3 border-b border-[var(--rule)] bg-[#0F1A24]">
+                    <span class="term-dot bg-[#5F5A54]"></span><span class="term-dot bg-[#5F5A54]"></span><span
+                        class="term-dot bg-[#5F5A54]"></span>
+                    <span class="font-mono text-xs text-[var(--fog)] ml-2">cv_manager</span>
+                </div>
+                <div class="p-6">
+                    <div id="cv-list-container" class="mb-6 font-mono text-sm text-[var(--fog)]">Loading CVs...</div>
+                    <form id="cv-upload-form" class="flex gap-3 items-end">
+                        <div class="flex-1">
+                            <label class="block font-mono text-xs text-[var(--fog)] mb-2">UPLOAD_NEW_CV
+                                (PDF/DOCX)</label>
+                            <input type="file" id="cv-file" accept=".pdf,.docx" required
+                                class="w-full bg-[var(--ink)] border border-[var(--rule)] text-[var(--paper)] text-sm rounded px-3 py-2 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-mono file:bg-[var(--panel)] file:text-[var(--paper)] hover:file:bg-[var(--rule)]">
+                        </div>
+                        <button type="submit"
+                            class="btn-primary px-4 py-2 rounded font-mono text-xs h-[38px] flex items-center gap-2">
+                            <span>SAVE & PROFILE</span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 2: Screenshot & Process -->
+        <section id="step-process" class="hidden-section fade-in">
+            <div class="flex items-center gap-3 mb-6">
+                <span
+                    class="w-8 h-8 rounded-full bg-[var(--amber)] text-[var(--ink)] font-mono text-sm flex items-center justify-center">02</span>
+                <h2 class="font-display text-2xl font-semibold">Process Job Posting</h2>
+            </div>
+            <div class="term-window rounded-lg overflow-hidden">
+                <div class="flex items-center gap-2 px-4 py-3 border-b border-[var(--rule)] bg-[#0F1A24]">
+                    <span class="term-dot bg-[#5F5A54]"></span><span class="term-dot bg-[#5F5A54]"></span><span
+                        class="term-dot bg-[#5F5A54]"></span>
+                    <span class="font-mono text-xs text-[var(--fog)] ml-2">pipeline_runner</span>
+                </div>
+                <div class="p-6 space-y-6">
+                    <form id="screenshot-form" class="space-y-4">
+                        <div>
+                            <label class="block font-mono text-xs text-[var(--fog)] mb-2">TARGET_SCREENSHOT
+                                (PNG/JPG)</label>
+                            <input type="file" id="screenshot-file" accept=".png,.jpg,.jpeg" required
+                                class="w-full bg-[var(--ink)] border border-[var(--rule)] text-[var(--paper)] text-sm rounded px-3 py-2 file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:text-xs file:font-mono file:bg-[var(--panel)] file:text-[var(--paper)] hover:file:bg-[var(--rule)]">
+                        </div>
+                        <div id="screenshot-preview" class="hidden">
+                            <img id="preview-img" class="max-h-64 rounded border border-[var(--rule)]" alt="Preview">
+                        </div>
+                        <!-- <button type="submit"
+                            class="btn-secondary px-6 py-3 rounded font-mono text-sm w-full md:w-auto">UPLOAD &
+                            PREPARE</button>
+                    </form> -->
+                        <div id="run-pipeline-container" class="hidden pt-4 border-t border-[var(--rule)]">
+                            <p class="font-mono text-xs text-[var(--sage)] mb-3">READY TO EXECUTE PIPELINE (APPLY MODE)
+                            </p>
+                            <button id="run-pipeline-btn"
+                                class="btn-primary px-6 py-3 rounded font-mono text-sm w-full md:w-auto flex items-center justify-center gap-2">
+                                <span>Create Draft</span>
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z">
+                                    </path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <div id="pipeline-loading" class="hidden">
+                            <div class="flex items-center gap-3 text-[var(--amber)] font-mono text-sm">
+                                <span class="status-dot"></span>
+                                <span>EXECUTING PIPELINE... (This may take 1-2 minutes)</span>
+                            </div>
+                        </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- STEP 3: Results & Draft -->
+        <section id="step-results" class="hidden-section fade-in">
+            <div class="flex items-center gap-3 mb-6">
+                <span
+                    class="w-8 h-8 rounded-full bg-[var(--sage)] text-[var(--ink)] font-mono text-sm flex items-center justify-center">03</span>
+                <h2 class="font-display text-2xl font-semibold">Generated Results</h2>
+            </div>
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                <div class="term-window rounded-lg p-6">
+                    <h3 class="font-mono text-xs text-[var(--amber)] mb-4">EXTRACTED_JOB_DATA</h3>
+                    <div class="space-y-3 font-mono text-sm">
+                        <div><span class="text-[var(--fog)]">COMPANY:</span> <span id="res-company"
+                                class="text-[var(--paper)]">&mdash;</span></div>
+                        <div><span class="text-[var(--fog)]">POSITION:</span> <span id="res-position"
+                                class="text-[var(--paper)]">&mdash;</span></div>
+                        <div><span class="text-[var(--fog)]">EMAIL:</span> <span id="res-email"
+                                class="text-[var(--sage)]">&mdash;</span></div>
+                        <div><span class="text-[var(--fog)]">MATCH_SCORE:</span> <span id="res-score"
+                                class="text-[var(--amber)]">&mdash;</span></div>
+                    </div>
+                </div>
+                <div class="term-window rounded-lg p-6">
+                    <h3 class="font-mono text-xs text-[var(--amber)] mb-4">VALIDATION_CHECK</h3>
+                    <div class="space-y-3 font-mono text-sm">
+                        <div><span class="text-[var(--fog)]">STATUS:</span> <span id="val-status"
+                                class="text-[var(--paper)]">&mdash;</span></div>
+                        <div><span class="text-[var(--fog)]">SCORE:</span> <span id="val-score"
+                                class="text-[var(--paper)]">&mdash;</span></div>
+                        <div id="val-warnings" class="text-[var(--amber)] text-xs mt-2"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="term-window rounded-lg overflow-hidden mb-6">
+                <div class="flex items-center justify-between px-4 py-3 border-b border-[var(--rule)] bg-[#0F1A24]">
+                    <span class="font-mono text-xs text-[var(--fog)]">GENERATED_COVER_LETTER.txt</span>
+                    <button onclick="copyToClipboard('res-cover-letter')"
+                        class="text-xs font-mono text-[var(--amber)] hover:text-[var(--paper)]">COPY</button>
+                </div>
+                <div class="p-6 max-h-96 overflow-y-auto">
+                    <pre id="res-cover-letter"
+                        class="font-mono text-sm text-[var(--paper-dim)] whitespace-pre-wrap leading-relaxed"></pre>
+                </div>
+            </div>
+            <div class="flex flex-col md:flex-row gap-4 items-start md:items-center">
+                <button id="create-draft-btn"
+                    class="btn-primary px-8 py-4 rounded font-mono text-sm flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z">
+                        </path>
+                    </svg>
+                    CREATE GMAIL DRAFT
+                </button>
+                <a href="/"
+                    class="btn-secondary px-6 py-4 rounded font-mono text-sm flex items-center justify-center">RESET</a>
+                <div id="draft-success" class="hidden items-center gap-2">
+                    <span class="text-[var(--sage)] font-mono text-sm">✅ Draft created successfully! Check your Gmail
+                        Drafts folder.</span>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-[var(--ink)] border-t border-[var(--rule)] py-8 mt-auto">
+        <div
+            class="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 font-mono text-xs text-[var(--fog)]">
+            <p>Built by Farhan Azzura</p>
+            <a href="https://github.com/Azzuralized/job-application-automation" target="_blank"
+                class="flex items-center gap-2 hover:text-[var(--paper)] transition-colors">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor">
+                    <path
+                        d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z" />
+                </svg>
+                <span>github.com/Azzuralized/job-application-automation</span>
+            </a>
+        </div>
+    </footer>
+
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>

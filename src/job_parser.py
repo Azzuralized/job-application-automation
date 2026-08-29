@@ -91,9 +91,9 @@ OCR TEXT:
 ----------------- END OCR -----------------
 """
 
-    response = client.models.generate_content(
-        model=GEMINI_MODEL,
-        contents=prompt,
+    chat = client.chats.create(model=GEMINI_MODEL)
+    response = chat.send_message(
+        prompt,
         config={
             "response_mime_type": "application/json",
             "response_schema": JobPosting,

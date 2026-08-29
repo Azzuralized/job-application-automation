@@ -1,10 +1,11 @@
 # main.py
 import sys
+import argparse
 from pathlib import Path
 
-SRC_DIR = Path(__file__).resolve().parent
+SRC_DIR = Path(__file__).parent / "src"
+sys.path.insert(0, str(SRC_DIR))
 
-# Import pipeline steps
 from src import ocr
 from src import job_parser
 from src import cv_profiler
@@ -14,61 +15,153 @@ from src import cover_letter_generator
 from src import content_validator
 from src import gmail_draft_creator
 
-def run_ocr(): return ocr.run()
-def run_job_parser(): job_parser.main()
-def run_cv_profiler(): cv_profiler.main()
-def run_cv_matcher(): cv_matcher.main()
-def run_application_builder(): application_builder.main()
-def run_cover_letter_generator(): cover_letter_generator.main()
-def run_content_validator(): content_validator.main()
-def run_gmail_draft_creator(): gmail_draft_creator.main()
-
-STEPS = [
-    (1, "OCR", run_ocr),
-    (2, "JOB PARSER", run_job_parser),
-    (3, "CV PROFILER", run_cv_profiler),
-    (4, "CV MATCHER", run_cv_matcher),
-    (5, "APPLICATION BUILDER", run_application_builder),
-    (6, "COVER LETTER GENERATOR", run_cover_letter_generator),
-    (7, "CONTENT VALIDATOR", run_content_validator),
-    (8, "GMAIL DRAFT CREATOR", run_gmail_draft_creator),
-]
 
 def print_header():
     print("\n" + "=" * 70)
     print("JOB APPLICATION AUTOMATION")
-    print("=" * 70 + "\nFULL PIPELINE\n")
-    for num, name, _ in STEPS:
-        print(f"  {num}. {name}")
     print("=" * 70)
 
-def run_step(number: int, name: str, function) -> bool:
-    print(f"\n{'#' * 70}\nSTEP {number} - {name}\n{'#' * 70}")
+
+def run_step(step_num, step_name, func):
+    print(f"\n{'#' * 70}")
+    print(f"STEP {step_num} - {step_name}")
+    print(f"{'#' * 70}\n")
     try:
-        function()
-        print(f"\n{'-' * 70}\n✅ STEP {number} COMPLETE - {name}\n{'-' * 70}")
+        func()
+        print(f"\n{'-' * 70}")
+        print(f"✅ STEP {step_num} COMPLETE - {step_name}")
+        print(f"{'-' * 70}")
         return True
     except KeyboardInterrupt:
         print("\n⚠️ Pipeline dihentikan oleh user.")
         return False
     except Exception as error:
-        print(f"\n{'!' * 70}\n❌ STEP {number} FAILED - {name}\n{'!' * 70}\n\nError: {error}")
+        print(f"\n{'!' * 70}")
+        print(f"❌ STEP {step_num} FAILED - {step_name}")
+        print(f"{'!' * 70}\n\nError: {error}")
         return False
 
-def main() -> int:
+
+def mode_profile():
     print_header()
-    print(f"📂 Source directory:\n{SRC_DIR}\n")
-    print("🚀 Starting application automation pipeline...")
-    
-    for number, name, function in STEPS:
-        if not run_step(number, name, function):
-            print(f"\n{'=' * 70}\n❌ PIPELINE STOPPED\n{'=' * 70}")
-            print(f"\nPipeline berhenti pada STEP {number} - {name}.\n")
-            return 1
-            
-    print(f"\n{'=' * 70}\n🎉 FULL PIPELINE COMPLETE\n{'=' * 70}")
-    print("\n⚠️ Email belum dikirim. 👤 Review Gmail Draft dan kirim secara manual.")
-    return 0
+    print("\n📋 MODE: PROFILE CVs")
+    print("=" * 70)
+    print("\nProfiling all CVs in cv/ folder...")
+
+    if run_step(1, "CV PROFILER", cv_profiler.main):
+        print("\n" + "=" * 70)
+        print("✅ CV PROFILING COMPLETE")
+        print("=" * 70)
+        print("\n📄 Saved to: output/cv/profiles.json")
+        print("\n🎯 Next: Run 'python main.py apply' to process a job.")
+    else:
+        sys.exit(1)
+
+
+def mode_apply():
+    print_header()
+    print("\n📋 MODE: APPLY TO JOB")
+    print("=" * 70)
+
+    profiles_file = Path("output/cv/profiles.json")
+    if not profiles_file.exists():
+        print("\n❌ profiles.json tidak ditemukan!")
+        print("💡 Jalankan 'python main.py profile' dulu.")
+        sys.exit(1)
+
+    print("\nProcessing job application (using existing CV profiles)...")
+
+    steps = [
+        (1, "OCR", ocr.run),
+        (2, "JOB PARSER", job_parser.main),
+        (3, "CV MATCHER", cv_matcher.main),
+        (4, "APPLICATION BUILDER", application_builder.main),
+        (5, "COVER LETTER GENERATOR", cover_letter_generator.main),
+        (6, "CONTENT VALIDATOR", content_validator.main),
+        (7, "GMAIL DRAFT CREATOR", gmail_draft_creator.main),
+    ]
+
+    for num, name, func in steps:
+        if not run_step(num, name, func):
+            print(f"\n{'=' * 70}")
+            print("❌ PIPELINE STOPPED")
+            print(f"{'=' * 70}")
+            sys.exit(1)
+
+    print(f"\n{'=' * 70}")
+    print("🎉 JOB APPLICATION COMPLETE")
+    print(f"{'=' * 70}")
+    print("\n⚠️ Email belum dikirim.")
+    print("👤 Review Gmail Draft dan kirim secara manual.")
+
+
+def mode_full():
+    print_header()
+    print("\n📋 MODE: FULL PIPELINE")
+    print("=" * 70)
+    print("\nRunning complete pipeline...")
+
+    steps = [
+        (1, "OCR", ocr.run),
+        (2, "JOB PARSER", job_parser.main),
+        (3, "CV PROFILER", cv_profiler.main),
+        (4, "CV MATCHER", cv_matcher.main),
+        (5, "APPLICATION BUILDER", application_builder.main),
+        (6, "COVER LETTER GENERATOR", cover_letter_generator.main),
+        (7, "CONTENT VALIDATOR", content_validator.main),
+        (8, "GMAIL DRAFT CREATOR", gmail_draft_creator.main),
+    ]
+
+    for num, name, func in steps:
+        if not run_step(num, name, func):
+            print(f"\n{'=' * 70}")
+            print("❌ PIPELINE STOPPED")
+            print(f"{'=' * 70}")
+            sys.exit(1)
+
+    print(f"\n{'=' * 70}")
+    print("🎉 FULL PIPELINE COMPLETE")
+    print(f"{'=' * 70}")
+    print("\n⚠️ Email belum dikirim.")
+    print("👤 Review Gmail Draft dan kirim secara manual.")
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="Job Application Automation System",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  python main.py profile    Profile CVs only
+  python main.py apply      Process job (skip CV profiling)
+  python main.py full       Full pipeline (all steps)
+        """
+    )
+
+    parser.add_argument(
+        'mode',
+        nargs='?',
+        choices=['profile', 'apply', 'full'],
+        help='Mode: profile, apply, or full'
+    )
+
+    args = parser.parse_args()
+
+    if not args.mode:
+        parser.print_help()
+        print("\n💡 Quick Start:")
+        print("  1. First time?     python main.py profile")
+        print("  2. New screenshot? python main.py apply")
+        print("  3. Everything?     python main.py full")
+        sys.exit(0)
+
+    if args.mode == 'profile':
+        mode_profile()
+    elif args.mode == 'apply':
+        mode_apply()
+    elif args.mode == 'full':
+        mode_full()
+
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()

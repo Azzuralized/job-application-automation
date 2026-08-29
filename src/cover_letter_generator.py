@@ -18,7 +18,7 @@ EMAIL_BODY_FILE = OUTPUT_DIR / "email_body.txt"
 
 load_dotenv(BASE_DIR / ".env")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite")
 
 
 # ============================================================
@@ -156,10 +156,9 @@ Return ONLY valid JSON. Use exactly this structure. Do not wrap in markdown code
 def generate_application_content(prompt: str) -> dict:
     client = genai.Client(api_key=GEMINI_API_KEY)
 
-    response = client.models.generate_content(
-        model=GEMINI_MODEL,
-        contents=prompt
-    )
+    # GANTI INI: Gunakan Chat API untuk menghindari warning AFC
+    chat = client.chats.create(model=GEMINI_MODEL)
+    response = chat.send_message(prompt)
 
     if not response.text:
         raise RuntimeError("Gemini mengembalikan response kosong.")
